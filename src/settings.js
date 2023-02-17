@@ -1,6 +1,6 @@
 module.exports = {
 
-  title: 'Vue hr admin',
+  title: '人力资源管理平台',
 
   /**
    * @type {boolean} true | false
@@ -12,5 +12,5 @@ module.exports = {
    * @type {boolean} true | false
    * @description Whether show the logo in sidebar
    */
-  sidebarLogo: false
+  sidebarLogo: true // 显示logo
 }

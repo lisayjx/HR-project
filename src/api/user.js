@@ -1,24 +1,27 @@
 import request from '@/utils/request'
 
+// 请求登录
 export function login(data) {
   return request({
-    url: '/vue-admin-template/user/login',
-    method: 'post',
+    method: 'POST',
+    url: '/sys/login',
     data
   })
 }
-
-export function getInfo(token) {
+// 获取用户信息
+export function getUserInfo() {
   return request({
-    url: '/vue-admin-template/user/info',
-    method: 'get',
-    params: { token }
+    method: 'POST',
+    url: '/sys/profile'
+  })
+}
+// 获取员工基本信息 为了获取到用户的头像而已
+export function getUserDetailById(id) {
+  return request({
+    url: `/sys/user/${id}`
   })
 }
 
 export function logout() {
-  return request({
-    url: '/vue-admin-template/user/logout',
-    method: 'post'
-  })
+
 }

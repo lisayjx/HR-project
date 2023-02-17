@@ -3,6 +3,7 @@
 @import './transition.scss';
 @import './element-ui.scss';
 @import './sidebar.scss';
+@import './common.scss';
 
 body {
   height: 100%;
@@ -29,6 +30,7 @@ html {
 *:before,
 *:after {
   box-sizing: inherit;
+  outline: 1px solid red;
 }
 
 a:focus,

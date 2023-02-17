@@ -1,20 +1,23 @@
 <template>
   <div class="login-container">
+
+    <img class="bgImg" src="@/assets/common/login.png" alt="">
+
     <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
 
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">人力资源管理系统</h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="mobile">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
-          ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
-          name="username"
+          ref="mobile"
+          v-model="loginForm.mobile"
+          placeholder="请输入手机号"
+          name="mobile"
           type="text"
           tabindex="1"
           auto-complete="on"
@@ -30,7 +33,7 @@
           ref="password"
           v-model="loginForm.password"
           :type="passwordType"
-          placeholder="Password"
+          placeholder="密码"
           name="password"
           tabindex="2"
           auto-complete="on"
@@ -41,51 +44,56 @@
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button
+        class="btn"
+        :loading="loading"
+        type="primary"
+        style="width:100%;margin-bottom:30px;"
+        @click.native.prevent="handleLogin"
+      >登录</el-button>
 
       <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
+        <span style="margin-right:20px;">账号: 13800000002</span>
+        <span> 密码: 123456</span>
       </div>
 
     </el-form>
+
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
-
+import { validMobile } from '@/utils/validate'
+import { mapActions } from 'vuex'
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
+    const validateMobile = (rule, value, callback) => {
+      validMobile(value) ? callback() : callback(new Error(' 手机号格式不对 '))
     }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
+
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        mobile: '13800000002',
+        password: '123456'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        mobile:
+        [
+          { required: true, trigger: 'blur', message: '手机号不能为空' },
+          { required: true, trigger: 'blur', validator: validateMobile }
+        ],
+        password: [
+          { required: true, trigger: 'blur', message: '密码不能为空' },
+          { required: true, trigger: 'blur', min: 6, max: 16, message: '密码应为6-16位' }
+        ]
       },
       loading: false,
       passwordType: 'password',
       redirect: undefined
     }
   },
+
   watch: {
     $route: {
       handler: function(route) {
@@ -95,6 +103,8 @@ export default {
     }
   },
   methods: {
+    // 把user模块中的actions里的login 映射过来
+    ...mapActions(['user/login']),
     showPwd() {
       if (this.passwordType === 'password') {
         this.passwordType = ''
@@ -106,18 +116,21 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
+      // 表单的手动校验
+      // validate里有一个回调函数，他里面有两个参数，第一个是是否校验成功
+      this.$refs.loginForm.validate(async valid => {
+        if (valid) { // 如果校验成功,请求actions，后续操作由actions--》mutations完成
+          try {
+            this.loading = true
+            // actions里的login是异步函数，等登陆成功后才会跳转页面 所以强制等待需要await
+            await this['user/login'](this.loginForm)
+            // this.$store.dispatch('user/login', this.loginForm)
+            this.$router.push('/')
+          } catch (err) {
+            console.log(err)
+          } finally {
             this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+          }
         }
       })
     }
@@ -130,8 +143,8 @@ export default {
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
 $bg:#283443;
-$light_gray:#fff;
-$cursor: #fff;
+$light_gray:#53b297;
+$cursor: orange;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
   .login-container .el-input input {
@@ -160,6 +173,9 @@ $cursor: #fff;
         box-shadow: 0 0 0px 1000px $bg inset !important;
         -webkit-text-fill-color: $cursor !important;
       }
+&::placeholder{
+  color: $light_gray;
+}
     }
   }
 
@@ -170,26 +186,39 @@ $cursor: #fff;
     color: #454545;
   }
 }
+.el-form-item__error {
+    color: #fff;
+    font-size: 16px;
+  }
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
+$bg:#60ccad;
 $dark_gray:#889aa4;
-$light_gray:#eee;
+$light_gray:#fff;
 
 .login-container {
   min-height: 100%;
   width: 100%;
   background-color: $bg;
   overflow: hidden;
-
+.bgImg{
+  position: fixed;
+  left: 0;
+  top: 100px;
+  width: 500px;
+  height: 500px;
+}
   .login-form {
     position: relative;
+    left: 200px;
+    top:50px;
     width: 520px;
     max-width: 100%;
     padding: 160px 35px 0;
     margin: 0 auto;
     overflow: hidden;
+
   }
 
   .tips {
@@ -202,6 +231,12 @@ $light_gray:#eee;
         margin-right: 16px;
       }
     }
+  }
+  .btn{
+    background-color: #fff;
+    color: $bg;
+    border-color: #eee;
+    font-size: 24px;
   }
 
   .svg-container {
@@ -233,5 +268,11 @@ $light_gray:#eee;
     cursor: pointer;
     user-select: none;
   }
+
+   .el-form-item{
+    background-color: #fff!important;
+  }
+
 }
+
 </style>
