@@ -115,3 +115,19 @@ export function param2Obj(url) {
   })
   return obj
 }
+
+// 转成树形结构的方法
+export function tranListToTreeData(list, rootVal) {
+  var arr = []
+  list.forEach(item => {
+    if (item.pid === rootVal) { // 第一次rootVal是空字符串
+      // 找到之后 就去找item下面有没有子节点
+      const children = tranListToTreeData(list, item.id)// 如果谁的pid=谁的id就说明是子节点
+      if (children.length) { // 如果找到了子节点
+        item.children = children// 把子节点加入到arr得children里
+      }
+      arr.push(item)
+    }
+  })
+  return arr
+}
