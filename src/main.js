@@ -11,6 +11,8 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
 import router from './router'
+// 引入所有需要全局注册的组件
+import components from './components'
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -32,6 +34,9 @@ Object.keys(directives).forEach(key => {
 Vue.use(ElementUI, { locale })
 // 如果想要中文版 element-ui，按如下方式声明
 // Vue.use(ElementUI)
+
+// 这里面的组件全局都可以用
+Vue.use(components)
 
 Vue.config.productionTip = false
 

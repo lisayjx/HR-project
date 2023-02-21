@@ -4,7 +4,11 @@
       <!-- 组织架构 -->
       <el-card class="tree-card">
         <!-- 头部 树形组件-->
-        <tree-tools :tree-node="company" :is-root="true" @addDept="handleAddDept" />
+        <tree-tools
+          :tree-node="company"
+          :is-root="true"
+          @addDept="handleAddDept"
+        />
         <!-- 身体 树形结构组件-->
         <el-tree
           :data="departs"
@@ -17,6 +21,7 @@
             :tree-node="data"
             @UpdateDelDepartment="handleGetDepartments"
             @addDept="handleAddDept"
+            @editDept="handleEditDepts"
           />
         </el-tree>
 
@@ -24,6 +29,7 @@
 
       <!-- 点击增加部门出现的表单 -->
       <add-dept
+        ref="addDept"
         :dialog-form-visible="dialogFormVisible"
         :node="node"
         @closePop="dialogFormVisible=false"
@@ -71,6 +77,12 @@ export default {
     //  event是treeTool传来的当前点击得哪个结点
       this.dialogFormVisible = true
       this.node = node
+    },
+    handleEditDepts(node) {
+      this.dialogFormVisible = true
+      this.node = node
+      // 去调用子组件 add-dept里面的handleGetDepartmentDetail方法
+      this.$refs.addDept.handleGetDepartmentDetail(node.id)
     }
   }
 }

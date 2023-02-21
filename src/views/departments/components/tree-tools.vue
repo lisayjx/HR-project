@@ -57,7 +57,7 @@ export default {
         this.$emit('addDept', this.treeNode)// this.treeNode当前点击的部门
       } else if (type === 'edit') {
         // 修改
-
+        this.$emit('editDept', this.treeNode)
       } else {
         // 删除
         this.handleDelDepartment(this.treeNode.id)

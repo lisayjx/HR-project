@@ -9,7 +9,7 @@ const service = axios.create({
 // 当执行 npm run build=>.evn.production=> 运维去整跨域
 // VUE_APP_BASE_API值在生产环境是api，在开发环境是/prod-api
   baseURL: process.env.VUE_APP_BASE_API, //  '/api'
-  timeout: 5000 // 设置超时时间
+  timeout: 7000 // 设置超时时间
 })
 
 const timeStampOut = 3600// token过期时间戳 一个小时

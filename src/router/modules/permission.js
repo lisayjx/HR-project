@@ -8,7 +8,7 @@ export default {
   children: [
     {
       path: '',
-      component: () => import('@/views/employees'),
+      component: () => import('@/views/permission'),
       meta: {
         title: '权限管理',
         icon: 'permission'

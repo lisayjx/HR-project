@@ -1,7 +1,7 @@
 <template>
   <el-dialog
-    title="增加/编辑部门"
-    :visible.sync="dialogFormVisible"
+    :title="deptName"
+    :visible="dialogFormVisible"
     @close="handleClose"
   >
     <el-form ref="form" :model="form" label-width="120px" :rules="formRules">
@@ -28,7 +28,7 @@
 </template>
 
 <script>
-import { addDepartment, getDepartments } from '@/api/departments'
+import { addDepartment, getDepartments, getDepartmentDetail, editDepartments } from '@/api/departments'
 import { getEmployeeSimple } from '@/api/employees'
 export default {
   name: 'AddDept',
@@ -46,7 +46,7 @@ export default {
 
   },
   data() {
-    // 校验重复部门名称
+  /*  // 校验重复部门名称
     const checkNameRepeat = async(rule, value, callback) => {
       // 同级子部门里的名字如果和当前输入的名字一样的话 不允许
       //   获取最新部门数据
@@ -61,6 +61,7 @@ export default {
       })
       isRepeat ? callback(new Error(`同级部门下已经存在这个${value}部门了`)) : callback()
     }
+
     // 校验重复部门编码
     const checkCodeRepeat = async(rule, value, callback) => {
       // 同级子部门里的名字如果和当前输入的编码一样的话 不允许
@@ -71,6 +72,56 @@ export default {
         // 要求编码和所有的部门编码都不能重复由于历史数据有可能没有code所以说这里加一个强制性条件就是value值不为空
         return item.code === value && value
       })
+      isRepeat ? callback(new Error(`已经存在这个编码了`)) : callback()
+    }
+*/
+
+    // 校验重复部门名称
+    const checkNameRepeat = async(rule, value, callback) => {
+      // 同级子部门里的名字如果和当前输入的名字一样的话 不允许
+      //   获取最新部门数据
+      const { depts } = await getDepartments()
+      let isRepeat = false
+      if (this.form.id) { // 编辑
+      //   找到所有同级子部门(找到除了我自己以外的平级的同事)
+        const sameSonDepts = depts.filter(item => {
+          return item.pid === this.node.id && item.id !== this.node.id
+        })
+        //   然后从同级子部门里找有没有和value一样的
+        isRepeat = sameSonDepts.some(item => {
+          return item.name === value
+        })
+      } else { // 新增
+        //   找到所有同级子部门(平级的同事包括我自己)
+        const sameSonDepts = depts.filter(item => {
+          return item.pid === this.node.id
+        })
+        //   然后从同级子部门里找有没有和value一样的
+        isRepeat = sameSonDepts.some(item => {
+          return item.name === value
+        })
+      }
+      isRepeat ? callback(new Error(`同级部门下已经存在这个${value}部门了`)) : callback()
+    }
+
+    // 校验重复部门编码
+    const checkCodeRepeat = async(rule, value, callback) => {
+      // 同级子部门里的名字如果和当前输入的编码一样的话 不允许
+      //   获取最新部门数据
+      const { depts } = await getDepartments()
+      let isRepeat = false
+      if (this.form.id) {
+        //   找有没有和value一样的(除了我自己)
+        isRepeat = depts.some(item => {
+        // 要求编码和所有的部门编码都不能重复由于历史数据有可能没有code所以说这里加一个强制性条件就是value值不为空
+          return item.id !== this.node.id && item.code === value && value
+        })
+      } else {
+        //   找有没有和value一样的
+        isRepeat = depts.some(item => {
+          return item.code === value && value
+        })
+      }
       isRepeat ? callback(new Error(`已经存在这个编码了`)) : callback()
     }
     return {
@@ -105,6 +156,11 @@ export default {
 
     }
   },
+  computed: {
+    deptName() {
+      return this.form.id ? '编辑部门' : '新增部门'
+    }
+  },
 
   methods: {
     // 点击确定
@@ -112,11 +168,15 @@ export default {
       // 如果校验成功
       this.$refs.form.validate(async isOk => {
         if (isOk) {
-          // 请求提交表单 接口
-          await addDepartment({
-            ...this.form,
-            pid: this.node.id// 调用新增接口 添加父部门的id
-          })
+          if (this.form.id) { // 编辑
+            await editDepartments(this.form)
+          } else { // 新增
+            // 请求提交表单 接口
+            await addDepartment({
+              ...this.form,
+              pid: this.node.id// 调用新增接口 添加父部门的id
+            })
+          }
 
           this.$emit('closePop')
           this.$emit('addDepts')
@@ -125,6 +185,15 @@ export default {
     },
     // 点击×
     handleClose() {
+      // 重置数据 变成这样 ，里面没有id
+      this.form = {
+        name: '',
+        code: '',
+        introduce: '',
+        manager: ''
+      }
+
+      // 它只能重置data里定义的数据
       this.$refs.form.resetFields()
       this.$emit('closePop')
     },
@@ -135,6 +204,11 @@ export default {
     // 点击取消
     cancel() {
       this.handleClose()
+    },
+    // 获取部门详情（为了编辑时候有显示数据）
+    async   handleGetDepartmentDetail(id) {
+      const re = await getDepartmentDetail(id)
+      this.form = re
     }
   }
 }
