@@ -11,6 +11,12 @@
       <!-- 右侧插槽 旧写法-->
       <el-button slot="right" type="primary">导入Excle</el-button>
     </page-tools>
+
+    <!-- 导入excel组件 -->
+    <UploadExcel />
+
+    <!-- 导入全局组件 上传图片 -->
+    <image-upload />
   </div>
 </template>
 

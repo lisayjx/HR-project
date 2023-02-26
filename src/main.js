@@ -13,6 +13,8 @@ import store from './store'
 import router from './router'
 // 引入所有需要全局注册的组件
 import components from './components'
+// 引入全局注册的过滤器
+import * as filters from '@/filters'
 
 import '@/icons' // icon
 import '@/permission' // permission control
@@ -28,6 +30,10 @@ Object.keys(directives).forEach(key => {
   // Vue.derective('iamgerror', {})
   // Vue.derective('abc1', {})
   // Vue.derective('abc2', {})
+})
+
+Object.keys(filters).forEach(key => {
+  Vue.filter(key, filters[key])
 })
 
 // set ElementUI lang to EN

@@ -15,7 +15,7 @@ export function getUserInfo() {
     url: '/sys/profile'
   })
 }
-// 获取员工基本信息 为了获取到用户的头像而已
+// 获取员工基本信息
 export function getUserDetailById(id) {
   return request({
     url: `/sys/user/${id}`
