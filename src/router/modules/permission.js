@@ -3,7 +3,7 @@ export default {
 
   component: Layout,
   path: '/permission',
-  name: 'employees',
+  name: 'permissions',
 
   children: [
     {

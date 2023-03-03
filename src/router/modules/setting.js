@@ -3,7 +3,7 @@ export default {
 
   component: Layout,
   path: '/setting',
-  name: 'setting',
+  name: 'settings',
 
   children: [
     {

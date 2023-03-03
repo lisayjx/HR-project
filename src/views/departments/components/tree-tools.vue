@@ -13,7 +13,7 @@
               操作<i class="el-icon-arrow-down el-icon--right" />
             </span>
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item command="add">添加子部门</el-dropdown-item>
+              <el-dropdown-item command="add" :disabled="!checkPermission('aa')">添加子部门</el-dropdown-item>
               <el-dropdown-item v-if="!isRoot" command="edit">编辑部门</el-dropdown-item>
               <el-dropdown-item v-if="!isRoot" command="del">删除部门</el-dropdown-item>
             </el-dropdown-menu>
@@ -28,6 +28,7 @@
 
 <script>
 import { delDepartments } from '@/api/departments'
+import checkPermission from '@/mixin/checkPermission'
 
 export default {
   name: 'TreeTools',

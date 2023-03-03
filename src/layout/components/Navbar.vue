@@ -9,6 +9,10 @@
     <!-- <breadcrumb class="breadcrumb-container" /> -->
 
     <div class="right-menu">
+      <!-- 放置颜色插件 -->
+      <theme-picker class="right-menu-item" />
+      <!-- 全屏组件 -->
+      <screen-full class="right-menu-item" />
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
           <img v-imagerror="defaultImg" :src="staffPhoto" class="user-avatar">
@@ -30,9 +34,8 @@
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
-    </div>
-  </div>
-</template>
+
+    </div></div></template>
 
 <script>
 import { mapGetters } from 'vuex'
@@ -127,15 +130,10 @@ export default {
       height: 100%;
       font-size: 18px;
       color: #5a5e66;
-      vertical-align: text-bottom;
-
-      &.hover-effect {
-        cursor: pointer;
-        transition: background .3s;
-
-        &:hover {
-          background: rgba(0, 0, 0, .025)
-        }
+      vertical-align: middle;
+      transition:  .5s;
+      &:hover{
+        transform: scale(0.8);
       }
     }
 

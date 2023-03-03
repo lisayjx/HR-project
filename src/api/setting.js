@@ -19,7 +19,7 @@ export function getCompanyInfo(id) {
 // 根据ID删除角色
 export function delRole(id) {
   return request({
-
+    url: `/sys/role/${id}`,
     method: 'DELETE'
   })
 }
@@ -43,5 +43,13 @@ export function updateRole(data) {
 export function getRoleDetail(id) {
   return request({
     url: `/sys/role/${id}`
+  })
+}
+// 给角色分配权限
+export function assignPerm(data) {
+  return request({
+    url: '/sys/role/assignPrem',
+    method: 'put',
+    data
   })
 }

@@ -78,3 +78,11 @@ export function savePersonalJobs(data) {
     data
   })
 }
+// 给员工分配角色
+export function saveAssignRoles(data) {
+  return request({
+    url: '/sys/user/assignRoles',
+    method: 'PUT',
+    data
+  })
+}

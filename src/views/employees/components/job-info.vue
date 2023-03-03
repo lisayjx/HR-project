@@ -1,5 +1,6 @@
 <template>
   <div class="job-info">
+
     <!-- 基础信息 -->
     <el-form label-width="220px">
       <div class="block">

@@ -1,5 +1,6 @@
 <template>
   <div class="user-info">
+
     <!-- 个人信息 -->
     <el-form label-width="220px">
       <!-- 工号 入职时间 -->
@@ -37,6 +38,7 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="聘用形式">
+
             <el-select v-model="userInfo.formOfEmployment" class="inputW">
               <el-option v-for="item in EmployeeEnum.hireType" :key="item.id" :label="item.value" :value="item.id" />
             </el-select>
@@ -60,7 +62,7 @@
         </el-col>
       </el-row>
     </el-form>
-    <!-- 基础信息 -->
+    <!-- 基础信息 ---------------------------------------------------------------->
     <el-form label-width="220px">
       <div class="block">
         <div class="title">基础信息</div>
@@ -318,20 +320,11 @@ export default {
     this.getUserDetailById()
   },
   methods: {
-    async savePersonal() {
-      await updatePersonal(this.formData)
-      this.$message.success('保存基础信息成功')
-    },
-    async saveUser() {
-      // 通过合并 得到一个新对象
-      await saveUserDetailById(this.userInfo)
-      this.$message.success('保存基本信息成功')
-    },
     // 读取上半部分的内容
     async getUserDetailById() {
       this.userInfo = await getUserDetailById(this.userId)
       // 设置头像,因为上传图片组件 显示的图都在他的fileList中
-      if (this.userInfo.staffPhoto) { // 有值表示之前有上传成功的头像
+      if (this.userInfo.staffPhoto && this.userInfo.staffPhoto.trim()) { // 有值表示之前有上传成功的头像
         // 在imageUpload组件中设置了 上传成功的图片 upload:true
         // 这里给upload:true 表示图片已经传成功
         this.$refs.staffPhoto.fileList = [{ url: this.userInfo.staffPhoto, upload: true }]
@@ -341,13 +334,34 @@ export default {
     async getPersonalDetail() {
       this.formData = await getPersonalDetail(this.userId)
       // 设置照片,因为上传图片组件 显示的图都在他的fileList中
-      console.log(this.formData)
-      if (this.formData.staffPhoto) {
+      if (this.formData.staffPhoto && this.userInfo.staffPhoto.trim()) {
         this.$refs.myStaffPhoto.fileList = [{ url: this.formData.staffPhoto, upload: true }]
       }
+    },
+    async saveUser() {
+      // 通过合并 得到一个新对象
+      const fileList = this.$refs.staffPhoto.fileList
+      if (fileList.some(item => item.upload !== true)) {
+        return this.$message.warning('请稍候，图片没有上传完成')
+      }
+      await saveUserDetailById({ ...this.userInfo, staffPhoto: fileList.length ? fileList[0].url : ' ' })
+      this.$message.success('保存基本信息成功')
+    },
+    async savePersonal() {
+      // 先去获取头像中的地址
+      // 保存上传的图片
+      const fileList = this.$refs.myStaffPhoto.fileList // 数组
+      // 做判断，判断当前图片有没有上传完成
+      if (fileList.some(item => item.upload !== true)) {
+        return this.$message.warning('请稍候，图片没有上传完成')
+      }
+      // 后面的代替前面对象里的staffPhoto，fileList如果没上传头像也能保存，空字符串由于接口问题必须加个空格
+      await updatePersonal({ ...this.formData, staffPhoto: fileList.length ? fileList[0].url : ' ' })
+      this.$message.success('保存基础信息成功')
     }
 
   }
+
 }
 </script>
 <style  scoped>

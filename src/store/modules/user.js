@@ -2,6 +2,8 @@
 import { getToken, setToken, removeToken, setTimeStamp } from '@/utils/auth'
 // 引入请求接口
 import { login, getUserInfo, getUserDetailById } from '@/api/user'
+// 引入重置路由的方法
+import { resetRouter } from '@/router'
 
 const state = {
 // 初始化state，从缓存中读取token
@@ -47,12 +49,15 @@ const actions = {
     const re2 = await getUserDetailById(re.userId)
     const baseUserInfo = { ...re, ...re2 }
     context.commit('setUserInfo', baseUserInfo) // re是获取到用户信息，re2是为了获取用户头像
-    return baseUserInfo // 这里为什么要返回 为后面权限埋下伏笔
+    return baseUserInfo // 这里为什么要返回 为后面权限埋下伏笔，权限拦截页面，在做筛选用户路由权限时候需要用到userInfo里面的menus用户路由权限
   },
   // 退出登录
   logout(context) {
-    context.commit('removeToken')
-    context.commit('removeUserInfo')
+    context.commit('removeToken')// 删除资料
+    context.commit('removeUserInfo')// 删除token
+    resetRouter()// 重置路由
+    // 去设置权限模块下路由为初始状态，清空permission模块下的state数据,调用同级子模块的permission里的函数
+    context.commit('permission/setRoutes', [], { root: true })
   }
 
 }

@@ -23,7 +23,7 @@
               <el-table-column label="描述" prop="description" />
               <el-table-column label="操作" width="300" align="center">
                 <template slot-scope="{row}">
-                  <el-button size="small" type="success">分配权限</el-button>
+                  <el-button size="small" type="success" @click="assignPerm(row.id)">分配权限</el-button>
                   <el-button size="small" type="primary" @click="updateRole(row.id)">修改</el-button>
                   <el-button size="small" type="danger" @click="delRole(row.id)">删除</el-button>
                 </template>
@@ -72,7 +72,7 @@
         </el-tabs>
       </el-card>
 
-      <!-- 弹窗 -->
+      <!-- 新增角色的弹窗 -->
       <el-dialog :visible.sync="dialogVisible" :title="dialogName" @close="closePop">
         <el-form ref="roleForm" :model="role" :rules="roleRules" label-width="80px" style="margin-top: 30px;">
           <el-form-item label="角色名称" prop="name">
@@ -87,18 +87,45 @@
           <el-button type="primary" size="small" @click="btnOk">确定</el-button>
         </el-row>
       </el-dialog>
+      <!-- 分配权限的弹窗 -->
+      <el-dialog title="分配权限" :visible.sync="showAssignPerm" @close="closePerPop">
+        <!-- 权限是一颗树 -->
+        <!-- 将数据绑定到组件上 -->
+        <!-- :show-checkbox="true" 是否显示复选框 -->
+        <!-- check-strictly 如果为true，表示父子之间不互相关联;默认为false互相关联-->
+        <!-- :default-checked-keys="selectCheck" 默认选中的节点 -->
+        <!-- node-key="id" id作为唯一标识,注意前面不需要加冒号":" -->
+        <el-tree
+          ref="permTree"
+          :data="permissionData"
+          :props="props"
+          show-checkbox
+          default-expand-all
+          :check-strictly="true"
+          node-key="id"
+          :default-checked-keys="permIds"
+        />
+        <el-row slot="footer" type="flex" justify="center">
+          <el-col :span="6">
+            <el-button type="primary" @click="permOk">确定</el-button>
+            <el-button type="default" @click="closePerPop">取消</el-button>
+          </el-col>
+        </el-row>
+      </el-dialog>
     </div>
   </div>
 </template>
 
 <script>
-import { getRoleList, getCompanyInfo, delRole, getRoleDetail, updateRole, addRole } from '@/api/setting'
+import { getRoleList, getCompanyInfo, delRole, getRoleDetail, updateRole, addRole, assignPerm } from '@/api/setting'
+import { getPermissionList } from '@/api/permission'
+import { tranListToTreeData } from '@/utils/index'
 import { mapGetters } from 'vuex'
 export default {
   data() {
     return {
       page: 1,
-      pagesize: 2,
+      pagesize: 10,
       total: 0,
       // 角色列表
       list: [
@@ -122,7 +149,17 @@ export default {
 
         ]
       },
-      dialogVisible: false // 弹窗的显示
+      dialogVisible: false, // 添加角色的弹窗显示
+      showAssignPerm: false, // 分配权限的弹窗显示
+      permissionData: [], // 权限列表
+      // 树形 定义显示字段的名称和子属性的字段名称
+      props: {
+        label: 'name', // 让树形列表显示name里的值 默认是显示label里的其实
+        children: 'children'
+      },
+      roleId: '', // 用来记录当前分配的角色的权限的id
+      permIds: [] // 默认选中的权限点数据，就是当前角色所拥有的权限
+
     }
   },
 
@@ -161,7 +198,7 @@ export default {
       try {
         await this.$confirm('确定删除吗?') // 只有点击了确定 才能进入到下方
         await delRole(id)
-        this.handleGetCompanyInfo()
+        this.handleGetRoleList()
         this.$message.success('删除角色成功')
       } catch (error) {
         console.log(error)
@@ -175,7 +212,7 @@ export default {
       this.role = re // re里还有permIds
       this.dialogVisible = true // 为了避免闪烁问题 先获取数据再显示弹窗
     },
-    // 点击确定
+    // 新增角色时候点击确定
     async  btnOk() {
       // this.$refs.roleForm.validate((isOk) => {})// 写法一
       // this.$refs.roleForm.validate().then().catch()// 写法二
@@ -184,12 +221,10 @@ export default {
         await this.$refs.roleForm.validate() // 检验通过才执行下面的否则进入catch
         if (this.role.id) {
           // 编辑
-          const re = await updateRole(this.role)
-          console.log(re, 66666)
+          await updateRole(this.role)
         } else {
           // 新增
-          const re = await addRole(this.role)
-          console.log(re, 7777)
+          await addRole(this.role)
         }
         this.handleGetRoleList() // 更新数据
         this.$message.success('操作成功')
@@ -198,7 +233,7 @@ export default {
         console.log(error)
       }
     },
-    // 关闭弹窗,点击取消/确定/×都会调用dialog的close事件
+    // 关闭新增弹窗,点击取消/确定/×都会调用dialog的close事件
     closePop() {
       // 重置表单
       this.role = {
@@ -206,6 +241,37 @@ export default {
         description: ''
       }
       this.$refs.roleForm.resetFields()// 重置表单校验规则
+    },
+    // 点击分配权限按钮
+    async assignPerm(id) {
+      // 1.获取权限树形列表
+      // 因为pid=0是根级访问权，1是子级操作权
+      // 转化成了带children的树形结构
+      this.permissionData = tranListToTreeData(await getPermissionList(), '0')
+      // 2.获取当前角色权限
+      // 把id记录下来 当你点击确定的时候是往哪个id里存那 点击确定时候接口用
+      this.roleId = id
+      const { permIds } = await getRoleDetail(id) // 根据ID获取角色详情
+      // 得到权限点
+      this.permIds = permIds
+
+      this.showAssignPerm = true
+    },
+    // 分配权限点击确定
+    async permOk() {
+      // getCheckedKeys() 若节点可被选择，则返回目前被选中的节点的 key 所组成的数组
+      this.permIds = this.$refs.permTree.getCheckedKeys()
+      await assignPerm({
+        id: this.roleId,
+        permIds: this.permIds
+      })
+      this.showAssignPerm = false
+      this.handleGetRoleList()
+      this.$message.success('操作成功')
+    },
+    closePerPop() {
+      this.permIds = []
+      this.showAssignPerm = false
     }
 
   }

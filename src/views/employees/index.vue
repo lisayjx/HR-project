@@ -12,7 +12,12 @@
         <template v-slot:right>
           <el-button type="success" size="small" @click="$router.push('/import')">导入Excel</el-button>
           <el-button type="danger" size="small" @click="exportExcel">导出Excel</el-button>
-          <el-button type="primary" size="small" @click="showDialog=true">新增员工</el-button>
+          <el-button
+            type="primary"
+            size="small"
+            :disabled="!checkPermission('aa')"
+            @click="showDialog=true"
+          >新增员工</el-button>
         </template>
       </page-tools>
       <!-- 放置表格和分页 -->
@@ -20,6 +25,17 @@
         <el-table border :data="list">
           <el-table-column label="序号" sortable="" type="index" />
           <el-table-column label="姓名" sortable="" prop="username" />
+          <el-table-column label="头像" prop="staffPhoto" width="130px" align="center">
+            <template v-slot="{row}">
+              <img
+                ref="staffPhoto"
+                v-imagerror="require('@/assets/common/bigUserHeader.png')"
+                :src="row.staffPhoto"
+                style="width: 80px;height: 80px;border-radius: 100%;"
+                @click="showQrCode(row.staffPhoto)"
+              >
+            </template>
+          </el-table-column>
           <el-table-column label="工号" sortable="" prop="workNumber" />
           <el-table-column label="聘用形式" :formatter="formatEmployment" sortable="" prop="formOfEmployment" />
           <el-table-column label="部门" sortable="" prop="departmentName" />
@@ -35,12 +51,22 @@
           </el-table-column>
           <el-table-column label="操作" sortable="" fixed="right" width="280">
             <template v-slot="{row}">
-              <el-button type="text" size="small" @click="$router.push(`/employees/detail/${row.id}`)">查看</el-button>
+              <el-button
+                type="text"
+                size="small"
+                :disabled="!checkPermission('aa')"
+                @click="$router.push(`/employees/detail/${row.id}`)"
+              >查看</el-button>
               <el-button type="text" size="small">转正</el-button>
               <el-button type="text" size="small">调岗</el-button>
               <el-button type="text" size="small">离职</el-button>
-              <el-button type="text" size="small">角色</el-button>
-              <el-button type="text" size="small" @click="handleDelEmployee(row)">删除</el-button>
+              <el-button type="text" size="small" @click="showRole(row.id)">角色</el-button>
+              <el-button
+                type="text"
+                size="small"
+                :disabled="!checkPermission('aa')"
+                @click="handleDelEmployee(row)"
+              >删除</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -58,6 +84,19 @@
 
       <!-- 弹窗组件 -->
       <add-employee :show-dialog.sync="showDialog" />
+      <!-- 二维码弹窗 -->
+      <el-dialog title="二维码" :visible.sync="showQrDialog">
+        <el-row type="flex" justify="center">
+          <canvas ref="myCanvas" />
+        </el-row>
+      </el-dialog>
+      <!-- 分配角色弹窗 -->
+      <assign-role
+        ref="rolePop"
+        :show-role-dialog="showRoleDialog"
+        :user-id="userId"
+        @closeRolePop="showRoleDialog=false"
+      />
     </div>
   </div>
 </template>
@@ -67,10 +106,14 @@ import { getEmployeeList } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees' // 员工信息的枚举
 import { delEmployee } from '@/api/employees'
 import AddEmployee from './components/add-employee.vue'
+import AssignRole from './components/assign-role.vue'
+// 引入二维码工具
+import QrCode from 'qrcode'
 // 引入格式化时间工具
 import { formatDate } from '@/filters'
+import checkPermission from '@/mixin/checkPermission'
 export default {
-  components: { AddEmployee },
+  components: { AddEmployee, AssignRole },
   data() {
     return {
       page: 1,
@@ -78,8 +121,10 @@ export default {
       total: 0,
       list: [], // 员工列表
       loading: false, // 控制遮罩层
-      showDialog: false // 控制弹窗
-
+      showDialog: false, // 控制弹窗
+      showQrDialog: false, // 控制二维码弹窗
+      showRoleDialog: false, // 控制分配角色的组件的弹窗
+      userId: ''// 当前点击的用户 id
     }
   },
   created() {
@@ -173,6 +218,29 @@ export default {
           return item[headers[key]]
         })
       })
+    },
+    // 点击头像弹出二维码
+    showQrCode(url) {
+      if (url) {
+        this.showQrDialog = true// 数据更新了 但是我的弹层会立刻出现吗 ？页面的渲染是异步的！！！！s
+        // 有一个方法可以在上一次数据更新完毕，页面渲染完毕之后
+        this.$nextTick(() => {
+          // 此时可以确认已经有ref对象了
+          QrCode.toCanvas(this.$refs.myCanvas, url)
+          // 如果转化的二维码后面信息 是一个地址的话 就会跳转到该地址 如果不是地址就会显示内容
+        })
+      } else {
+        return this.$message.warning('此用户还没有上传头像')
+      }
+    },
+    // 点击角色时
+    async  showRole(id) {
+      this.userId = id
+
+      // 调用子组件的方法await 解决闪动问题，等数据出来再弹层
+      await this.$refs.rolePop.getUserDetailById(id)
+
+      this.showRoleDialog = true
     }
   }
 }
