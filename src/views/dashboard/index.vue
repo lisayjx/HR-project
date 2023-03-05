@@ -36,28 +36,28 @@
               <ul class="noticeList">
                 <li>
                   <div class="item">
-                    <img src="@/assets/common/img.jpeg" alt="">
+                    <img src="@/assets/common/bigUserHeader.png" alt="">
                     <div>
-                      <p><span class="col">朱继柳</span> 发布了 第1期“传智大讲堂”互动讨论获奖名单公布</p>
-                      <p>2018-07-21 15:21:38</p>
+                      <p><span class="col">张红霞</span> 发布了 第1期互动讨论获奖名单公布</p>
+                      <p>2022-07-21 13:21:38</p>
                     </div>
                   </div>
                 </li>
                 <li>
                   <div class="item">
-                    <img src="@/assets/common/img.jpeg" alt="">
+                    <img src="@/assets/common/bigUserHeader.png" alt="">
                     <div>
-                      <p><span class="col">朱继柳</span> 发布了 第2期“传智大讲堂”互动讨论获奖名单公布</p>
-                      <p>2018-07-21 15:21:38</p>
+                      <p><span class="col">李一天</span> 发布了 第2期互动讨论获奖名单公布</p>
+                      <p>2021-06-11 15:11:38</p>
                     </div>
                   </div>
                 </li>
                 <li>
                   <div class="item">
-                    <img src="@/assets/common/img.jpeg" alt="">
+                    <img src="@/assets/common/bigUserHeader.png" alt="">
                     <div>
-                      <p><span class="col">朱继柳</span> 发布了 第3期“传智大讲堂”互动讨论获奖名单公布</p>
-                      <p>2018-07-21 15:21:38</p>
+                      <p><span class="col">张海</span> 发布了 第3期互动讨论获奖名单公布</p>
+                      <p>2020-07-12 15:21:28</p>
                     </div>
                   </div>
                 </li>

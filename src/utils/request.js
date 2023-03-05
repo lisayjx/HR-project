@@ -7,7 +7,7 @@ import router from '@/router'
 const service = axios.create({
 // 当执行 npm run dev=>.evn.development=> '/api'=> 跨域代理
 // 当执行 npm run build=>.evn.production=> 运维去整跨域
-// VUE_APP_BASE_API值在生产环境是api，在开发环境是/prod-api
+// VUE_APP_BASE_API值在开发环境是api，在生产环境是/prod-api
   baseURL: process.env.VUE_APP_BASE_API, //  '/api'
   timeout: 7000 // 设置超时时间
 })

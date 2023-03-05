@@ -54,7 +54,9 @@ const actions = {
   // 退出登录
   logout(context) {
     context.commit('removeToken')// 删除资料
-    context.commit('removeUserInfo')// 删除token
+    context.commit('removeUserInfo') +// 删除token
+    // 重置多页签
+context.dispatch('tagsView/delAllViews', null, { root: true })
     resetRouter()// 重置路由
     // 去设置权限模块下路由为初始状态，清空permission模块下的state数据,调用同级子模块的permission里的函数
     context.commit('permission/setRoutes', [], { root: true })

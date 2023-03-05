@@ -9,6 +9,8 @@
     <!-- <breadcrumb class="breadcrumb-container" /> -->
 
     <div class="right-menu">
+      <!-- 防止语言插件 -->
+      <lang-select />
       <!-- 放置颜色插件 -->
       <theme-picker class="right-menu-item" />
       <!-- 全屏组件 -->
